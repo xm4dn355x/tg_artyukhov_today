@@ -19,14 +19,14 @@ conn = psycopg2.connect(dbname=DB_NAME, user=DB_USERNAME, password=DB_PASS, host
 cursor = conn.cursor(cursor_factory=DictCursor)
 
 
-def read_db():
+def read_db() -> list:
     """Читает все данные из базы"""
     cursor.execute('SELECT * FROM posts')
     res = cursor.fetchall()
     return res
 
 
-def insert_db(row):     # STATUS FALSE!!!!!!!!!!!!!!!!!!!!!!!!!!!
+def insert_db(row: dict) -> None:     # STATUS FALSE!!!!!!!!!!!!!!!!!!!!!!!!!!!
     """Вставляет в базу заготовку поста"""
     insert_statement = f"INSERT INTO posts (title, description, img, url, status) VALUES ('{row['title']}', " \
                        f"'{row['description']}', '{row['img']}', '{row['url']}', {False});"
@@ -34,7 +34,7 @@ def insert_db(row):     # STATUS FALSE!!!!!!!!!!!!!!!!!!!!!!!!!!!
     conn.commit()
     conn.close()
 
-def update_db(row):
+def update_db(row: dict) -> None:
     """Обновляет строку поста и ставит статус публикации True"""
     print('update_db')
     cursor.execute(f"UPDATE posts SET title='{row['title']}', description='{row['description']}', img='{row['img']}', "
