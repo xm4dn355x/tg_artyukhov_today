@@ -65,3 +65,6 @@ def post_in_channel(data: dict) -> None:
 if __name__ == '__main__':
     print('Артюхов-Today')
     update_channel_loop()
+
+# docker build -t artyuhov_today .
+# docker run --rm --network host artyuhov_today
