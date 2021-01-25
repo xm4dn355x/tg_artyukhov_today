@@ -92,7 +92,8 @@ def parse_sp():
                 if filter(title):
                     print('MATCH SP!!!')
                     data.append({'title': title, 'description': desc, 'img': img, 'url': url})
-        except:
+        except Exception as e:
+            print(e)
             print('SP CONNECTION LOST!!!!!!!')
     return data
 
@@ -115,7 +116,8 @@ def parse_ks():
                     data.append({'title': title, 'description': desc, 'img': img, 'url': url})
                 elif filter(desc):
                     data.append({'title': title, 'description': desc, 'img': img, 'url': url})
-        except:
+        except Exception as e:
+            print(e)
             print('KS CONNECTION LOST!!!!!!!')
     return data
 
@@ -141,11 +143,16 @@ def parse_yr():
                     data.append({'title': title, 'description': desc, 'img': img, 'url': url})
                 elif filter(desc):
                     data.append({'title': title, 'description': desc, 'img': img, 'url': url})
-        except:
+        except Exception as e:
+            print(e)
             print('YR CONNECTION LOST!!!!!!!')
     return data
 
 
 if __name__ == '__main__':
     for post in parse_sp():
+        print(post)
+    for post in parse_ks():
+        print(post)
+    for post in parse_yr():
         print(post)
