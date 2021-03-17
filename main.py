@@ -67,4 +67,4 @@ if __name__ == '__main__':
     update_channel_loop()
 
 # docker build -t artyuhov_today .
-# docker run --rm --network host artyuhov_today
+# docker run --network host artyuhov_today
