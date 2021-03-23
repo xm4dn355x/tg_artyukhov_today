@@ -14,6 +14,7 @@ from db_engine import read_db, insert_db
 import re
 import requests
 
+
 # Ссылки на страницы новостей
 SP_URL = 'https://sever-press.ru/vse-novosti/'
 AJAX_SP_URL = 'https://sever-press.ru/wp-admin/admin-ajax.php'
@@ -40,7 +41,7 @@ YR_BASE_URL = 'https://yamal-region.tv/'
 YR_PAGINATOR = '/?page='
 
 
-def filter(text: str) -> bool:
+def title_and_desc_filter(text: str) -> bool:
     """Поиск упоминания губернатора в тексте"""
     if re.search(r'\bгубернатор\b', text.lower()):
         return True
@@ -61,7 +62,7 @@ def parse_all():
         for db in db_data:
             if parse['url'] == db['url']:
                 status = True
-        if status == False:
+        if not status:
             res.append(parse)
     print(f'parsed_data после бармицвы: {len(res)}')
     for row in res:
@@ -77,19 +78,19 @@ def get_html(url: str) -> str:
 
 
 def parse_sp():
-    """Парсер сайте Север-Пресс"""
+    """Парсер сайта Север-Пресс"""
     print('parse SP')
     data = []
     for page in range(1, 10):
         try:
-            parse_ajax = requests.post(url=AJAX_SP_URL, data={'action': 'loadarchive', 'query': SP_QUERY, 'page':
-                page}).text.split('<div class="col-12 col-md-6 col-lg-4 article-container">')
+            parse_ajax = requests.post(url=AJAX_SP_URL, data={'action': 'loadarchive', 'query': SP_QUERY, 'page': page})
+            parse_ajax = parse_ajax.text.split('<div class="col-12 col-md-6 col-lg-4 article-container">')
             for i in range(1, len(parse_ajax)):
                 title = parse_ajax[i].split('<h3>')[1].split('</h3>')[0].replace('\xa0', ' ')
                 desc = ''
                 img = parse_ajax[i].split('img src="')[1].split('"')[0]
                 url = parse_ajax[i].split('href="')[1].split('"')[0]
-                if filter(title):
+                if title_and_desc_filter(title):
                     print('MATCH SP!!!')
                     data.append({'title': title, 'description': desc, 'img': img, 'url': url})
         except Exception as e:
@@ -99,22 +100,22 @@ def parse_sp():
 
 
 def parse_ks():
-    """Парсер сайте Красный север"""
+    """Парсер сайта Красный север"""
     print('parse KS')
     data = []
     for i in range(1, 10):
         try:
             html = get_html(KS_URL + KS_PAGINATOR + str(i))
             soup = BeautifulSoup(html, 'lxml')
-            posts = soup.find_all('div', class_='content-body')
-            for post in posts:
-                title = post.find('a', class_='news-link text-none').get('title').strip().replace('\xa0', ' ')
-                desc = post.find('p', class_='description font-open-s-light nm-b').text.strip().replace('\xa0', ' ')
-                img = KS_BASE_URL + post.find('img').get('src')
-                url = KS_BASE_URL + post.find('a', class_='news-link text-none').get('href')
-                if filter(title):
+            pubs = soup.find_all('div', class_='content-body')
+            for pub in pubs:
+                title = pub.find('a', class_='news-link text-none').get('title').strip().replace('\xa0', ' ')
+                desc = pub.find('p', class_='description font-open-s-light nm-b').text.strip().replace('\xa0', ' ')
+                img = KS_BASE_URL + pub.find('img').get('src')
+                url = KS_BASE_URL + pub.find('a', class_='news-link text-none').get('href')
+                if title_and_desc_filter(title):
                     data.append({'title': title, 'description': desc, 'img': img, 'url': url})
-                elif filter(desc):
+                elif title_and_desc_filter(desc):
                     data.append({'title': title, 'description': desc, 'img': img, 'url': url})
         except Exception as e:
             print(e)
@@ -123,25 +124,26 @@ def parse_ks():
 
 
 def parse_yr():
-    """Парсер сайте Ямал-Регион"""
+    """Парсер сайта Ямал-Регион"""
     print('parse YR')
     data = []
     for i in range(1, 10):
         try:
             html = get_html(YR_URL + YR_PAGINATOR + str(i))
             soup = BeautifulSoup(html, 'lxml')
-            posts = soup.find_all('div', class_='news-row')
-            for post in posts:
-                title = post.find('div', class_='title').text.strip().replace('\xa0', ' ')
-                desc = post.find('div', class_='text').text.strip().replace('\xa0', ' ')
-                try:
-                    img = YR_BASE_URL + post.find('img').get('src')
-                except:
-                    img = post.find('a', class_='video-tn').get('src')
-                url = YR_BASE_URL + post.find('a').get('href')
-                if filter(title):
+            pubs = soup.find_all('div', class_='news-row')
+            for pub in pubs:
+                title = pub.find('div', class_='title').text.strip().replace('\xa0', ' ')
+                desc = pub.find('div', class_='text').text.strip().replace('\xa0', ' ')
+                # try:
+                img = YR_BASE_URL + pub.find('img').get('src')
+                # except Exception as e: # Найти название эксепшна если упадёт
+                #     print(e)
+                #     img = pub.find('a', class_='video-tn').get('src')
+                url = YR_BASE_URL + pub.find('a').get('href')
+                if title_and_desc_filter(title):
                     data.append({'title': title, 'description': desc, 'img': img, 'url': url})
-                elif filter(desc):
+                elif title_and_desc_filter(desc):
                     data.append({'title': title, 'description': desc, 'img': img, 'url': url})
         except Exception as e:
             print(e)
